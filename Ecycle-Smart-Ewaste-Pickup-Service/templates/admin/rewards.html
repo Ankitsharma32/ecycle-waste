@@ -1,0 +1,306 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">
+            <i class="fas fa-gift text-primary me-2"></i> Rewards Management
+        </h1>
+        <a href="{{ url_for('admin_add_reward') }}" class="btn btn-success">
+            <i class="fas fa-plus-circle me-2"></i>Add New Reward
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i>Available Rewards</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary active filter-btn" data-filter="all">All</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="Product">Products</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="Coupon">Coupons</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary filter-btn" data-filter="Discount">Discounts</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Points</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reward in rewards %}
+                                <tr class="reward-row" data-type="{{ reward.reward_type }}">
+                                    <td>{{ reward.id }}</td>
+                                    <td>
+                                        {% if reward.image_path %}
+                                        <img src="{{ reward.image_path }}" alt="{{ reward.name }}" class="me-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        {% else %}
+                                        <i class="fas {% if reward.reward_type == 'Product' %}fa-box-open{% elif reward.reward_type == 'Coupon' %}fa-ticket-alt{% else %}fa-percent{% endif %} me-2"></i>
+                                        {% endif %}
+                                        {{ reward.name }}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if reward.reward_type == 'Product' %}bg-primary{% elif reward.reward_type == 'Coupon' %}bg-info{% else %}bg-warning text-dark{% endif %}">
+                                            {{ reward.reward_type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ reward.points_required }}</td>
+                                    <td>
+                                        {% if reward.stock <= 5 and reward.stock > 0 %}
+                                        <span class="text-warning">{{ reward.stock }}</span>
+                                        {% elif reward.stock <= 0 %}
+                                        <span class="text-danger">Out of stock</span>
+                                        {% else %}
+                                        {{ reward.stock }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if reward.active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRewardModal{{ reward.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteRewardModal{{ reward.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No rewards available. Add some rewards to get started!</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Redemption History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>User</th>
+                                    <th>Reward</th>
+                                    <th>Points</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for redemption in redemptions %}
+                                <tr>
+                                    <td>{{ redemption.id }}</td>
+                                    <td>{{ redemption.redeemed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_user_detail', user_id=redemption.user_id) }}">
+                                            {{ redemption.user.username }}
+                                        </a>
+                                    </td>
+                                    <td>{{ redemption.reward.name }}</td>
+                                    <td>{{ redemption.points_spent }}</td>
+                                    <td>
+                                        {% if redemption.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif redemption.status == 'Processed' %}
+                                        <span class="badge bg-info">Processed</span>
+                                        {% elif redemption.status == 'Delivered' %}
+                                        <span class="badge bg-success">Delivered</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ redemption.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#updateStatusModal{{ redemption.id }}">
+                                            <i class="fas fa-edit me-1"></i>Update Status
+                                        </button>
+                                        
+                                        <!-- Update Status Modal -->
+                                        <div class="modal fade" id="updateStatusModal{{ redemption.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Update Redemption Status</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form action="{{ url_for('admin_update_redemption', redemption_id=redemption.id) }}" method="post">
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="status" class="form-label">Status</label>
+                                                                <select class="form-select" id="status" name="status" required>
+                                                                    <option value="Pending" {% if redemption.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                                    <option value="Processed" {% if redemption.status == 'Processed' %}selected{% endif %}>Processed</option>
+                                                                    <option value="Delivered" {% if redemption.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                                                                    <option value="Cancelled" {% if redemption.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Update Status</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No redemptions yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal templates for edit/delete actions would go here -->
+{% for reward in rewards %}
+<!-- Edit Modal -->
+<div class="modal fade" id="editRewardModal{{ reward.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Reward</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin_edit_reward', reward_id=reward.id) }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Reward Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ reward.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ reward.description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="points_required" class="form-label">Points Required</label>
+                        <input type="number" class="form-control" id="points_required" name="points_required" value="{{ reward.points_required }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reward_type" class="form-label">Reward Type</label>
+                        <select class="form-select" id="reward_type" name="reward_type" required>
+                            <option value="Product" {% if reward.reward_type == 'Product' %}selected{% endif %}>Product</option>
+                            <option value="Coupon" {% if reward.reward_type == 'Coupon' %}selected{% endif %}>Coupon</option>
+                            <option value="Discount" {% if reward.reward_type == 'Discount' %}selected{% endif %}>Discount</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stock" class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="stock" name="stock" value="{{ reward.stock }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image_path" class="form-label">Image URL (optional)</label>
+                        <input type="text" class="form-control" id="image_path" name="image_path" value="{{ reward.image_path }}">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="active" name="active" {% if reward.active %}checked{% endif %}>
+                        <label class="form-check-label" for="active">Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteRewardModal{{ reward.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Reward</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the reward <strong>"{{ reward.name }}"</strong>?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('admin_delete_reward', reward_id=reward.id) }}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add toast notifications (requires Bootstrap 5 toast)
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    showToast('Notification', '{{ message }}', '{{ category }}');
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        // Filter functionality for rewards
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const rewardRows = document.querySelectorAll('.reward-row');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filterValue = this.getAttribute('data-filter');
+                
+                // Show/hide reward rows based on filter
+                rewardRows.forEach(row => {
+                    if (filterValue === 'all' || row.getAttribute('data-type') === filterValue) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

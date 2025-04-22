@@ -1,0 +1,102 @@
+Here's a **detailed flow and database schema** to ensure Replit AI correctly understands the project structure.
+
+---
+
+## **Project Flow**  
+
+### **1. User Flow**  
+1. **Register** → User creates an account.  
+2. **Login** → User logs in and is redirected to the **Home Page**.  
+3. **E-waste Scheduling**:  
+   - **Option 1: Manual Entry** → User selects the e-waste type, model, condition, and enters details manually.  
+   - **Option 2: AI Classification** → User uploads an image, and the Roboflow API auto-fills details (user can edit if needed).  
+4. **Schedule Pickup** → Clicking "Schedule" saves the request in the **History Section**.  
+5. **History Section**: Displays past and current pickup requests with status (Pending/Collected).  
+6. **Admin Dashboard Button** → Visible in the navbar for admins.  
+7. **Status Updates**: If the admin updates the **status, eco points, or carbon footprint**, changes reflect in the user's history section.  
+
+---
+
+### **2. Admin Flow**  
+1. **Separate Admin Login Page** → Admin logs in.  
+2. **Admin Dashboard Controls**:  
+   - View and manage **pickup requests**.  
+   - Change **status** (Pending → Collected).  
+   - Update **eco points** and **carbon footprint saved**.  
+   - Ensure all updates reflect on the **user's history** in real-time.  
+
+---
+
+## **Database Schema**  
+
+### **1. Users Table (`users`)**  
+Stores user details and eco points.  
+```sql
+CREATE TABLE users (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    eco_points INTEGER DEFAULT 0,
+    carbon_saved REAL DEFAULT 0.0
+);
+```
+
+### **2. E-waste Table (`ewaste`)**  
+Stores manually entered or AI-classified e-waste details.  
+```sql
+CREATE TABLE ewaste (
+    ewaste_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    ewaste_type TEXT NOT NULL,
+    model TEXT,
+    ram TEXT,
+    condition TEXT,
+    estimated_price INTEGER,
+    eco_points INTEGER,
+    classification_result TEXT,
+    image_url TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+```
+
+### **3. Schedule Table (`schedule`)**  
+Tracks pickup requests and their status.  
+```sql
+CREATE TABLE schedule (
+    schedule_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    ewaste_id INTEGER,
+    status TEXT DEFAULT 'Pending',  -- 'Pending' or 'Collected'
+    scheduled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (ewaste_id) REFERENCES ewaste(ewaste_id)
+);
+```
+
+### **4. Admin Table (`admins`)**  
+Stores admin login credentials.  
+```sql
+CREATE TABLE admins (
+    admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
+);
+```
+
+---
+
+### **How Changes Reflect in Real-Time**
+- When **admin updates the schedule status**, the `status` field in the `schedule` table is updated.
+- **Eco points and carbon footprint updates**: Admin modifies the `eco_points` and `carbon_saved` fields in the `users` table.
+- Changes are fetched dynamically from the database when the user visits their **History Section**.
+
+---
+
+### **Next Steps**
+- Implement database models in Flask/PHP.
+- Ensure user authentication with **session-based login**.
+- Connect frontend to backend for **status updates**.
+- Use AJAX or **WebSockets for real-time updates**.
+
+This should ensure Replit AI **understands and builds the project properly** without crashing. Let me know if you need any refinements! 🚀

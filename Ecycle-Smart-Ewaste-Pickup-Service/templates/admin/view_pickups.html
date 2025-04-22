@@ -1,0 +1,97 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-truck me-2"></i>Manage Pickups</h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <!-- Filter Controls -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <label for="statusFilter" class="form-label">Filter by Status:</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="" {% if not status_filter %}selected{% endif %}>All Pickups</option>
+                        <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Collected" {% if status_filter == 'Collected' %}selected{% endif %}>Collected</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="searchPickups" class="form-label">Search Pickups:</label>
+                    <input type="text" id="searchPickups" class="form-control" placeholder="Search by username, e-waste type...">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pickups Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Pickup Requests</h4>
+        </div>
+        <div class="card-body">
+            {% if pickups %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Pickup Date</th>
+                            <th>Username</th>
+                            <th>E-waste Type</th>
+                            <th>Model</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule, user, ewaste in pickups %}
+                        <tr>
+                            <td>{{ schedule.pickup_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ ewaste.ewaste_type }}</td>
+                            <td>{{ ewaste.model or 'N/A' }}</td>
+                            <td>{{ schedule.pickup_address|truncate(30) }}</td>
+                            <td class="status-cell">
+                                <span class="badge {% if schedule.status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ schedule.status }}
+                                </span>
+                            </td>
+                            <td class="action-cell">
+                                {% if schedule.status == 'Pending' %}
+                                <button class="btn btn-sm btn-success update-status-btn" 
+                                        data-id="{{ schedule.id }}" 
+                                        data-status="Collected">
+                                    Mark as Collected
+                                </button>
+                                {% else %}
+                                <span class="text-success"><i class="fas fa-check-circle"></i> Completed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                {% if status_filter %}
+                No pickups with status "{{ status_filter }}" found.
+                {% else %}
+                No pickup requests available.
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

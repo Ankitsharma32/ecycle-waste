@@ -1,0 +1,129 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <h2><i class="fas fa-leaf me-2"></i>Welcome, {{ user.username }}!</h2>
+        <p>Your contribution to a greener planet makes a difference.</p>
+    </div>
+    
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-medal fa-3x mb-3"></i>
+                    <h3>{{ user.eco_points }}</h3>
+                    <p>Eco Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-leaf fa-3x mb-3"></i>
+                    <h3>{{ user.carbon_saved|round(2) }} kg</h3>
+                    <p>Carbon Footprint Saved</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-box fa-3x mb-3"></i>
+                    <h3>{{ pickups|length }}</h3>
+                    <p>Total Pickups</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions and Recent Pickups -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('schedule') }}" class="btn btn-success">
+                            <i class="fas fa-plus-circle me-2"></i>Schedule New Pickup
+                        </a>
+                        <a href="{{ url_for('history') }}" class="btn btn-info">
+                            <i class="fas fa-history me-2"></i>View Pickup History
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-newspaper me-2"></i>E-waste News</h4>
+                </div>
+                <div class="card-body">
+                    {% if news %}
+                        {% for item in news[:3] %}
+                        <div class="news-item">
+                            <h5>{{ item.title }}</h5>
+                            <a href="{{ item.link }}" target="_blank" class="btn btn-sm btn-outline-primary">Read More</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No news available at the moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-truck me-2"></i>Recent Pickups</h4>
+                </div>
+                <div class="card-body">
+                    {% if pickups %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>E-waste Type</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pickup in pickups[:5] %}
+                                    <tr>
+                                        <td>{{ pickup.scheduled_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ pickup.ewaste.ewaste_type }}</td>
+                                        <td>
+                                            <span class="badge {% if pickup.status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                                {{ pickup.status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% if pickups|length > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('history') }}" class="btn btn-outline-primary">View All Pickups</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>No pickup history yet. Schedule your first pickup!
+                        </div>
+                        <div class="text-center">
+                            <a href="{{ url_for('schedule') }}" class="btn btn-primary">Schedule Pickup</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

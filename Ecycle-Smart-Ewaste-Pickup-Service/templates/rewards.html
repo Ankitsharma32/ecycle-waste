@@ -1,0 +1,158 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="display-4 mb-4">
+        <i class="fas fa-gift text-success me-3"></i>Rewards Marketplace
+    </h1>
+    
+    <div class="rewards-banner mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2">Your Eco Impact</h2>
+                <p class="lead mb-0">You have <span class="badge bg-light text-dark">{{ session.get('eco_points', 0) }} Eco Points</span> available to redeem for eco-friendly products and exclusive discounts!</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-inline-block p-3 rounded-circle bg-light">
+                    <i class="fas fa-leaf text-success" style="font-size: 2.5rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Available Rewards -->
+    <h2 class="mb-4"><i class="fas fa-store me-2"></i>Available Rewards</h2>
+    
+    <!-- Filter Buttons -->
+    <div class="btn-group mb-4" role="group">
+        <button type="button" class="btn btn-outline-primary active filter-btn" data-filter="all">All</button>
+        <button type="button" class="btn btn-outline-primary filter-btn" data-filter="Product">Products</button>
+        <button type="button" class="btn btn-outline-primary filter-btn" data-filter="Coupon">Coupons</button>
+        <button type="button" class="btn btn-outline-primary filter-btn" data-filter="Discount">Discounts</button>
+    </div>
+    
+    <div class="row">
+        {% for reward in rewards %}
+        <div class="col-md-4 mb-4 reward-item" data-type="{{ reward.reward_type }}">
+            <div class="card h-100 reward-card">
+                {% if reward.image_path %}
+                <img src="{{ reward.image_path }}" class="card-img-top reward-img" alt="{{ reward.name }}">
+                {% else %}
+                <div class="card-img-top reward-img d-flex align-items-center justify-content-center bg-dark">
+                    {% if reward.reward_type == 'Product' %}
+                    <i class="fas fa-box-open reward-category-icon"></i>
+                    {% elif reward.reward_type == 'Coupon' %}
+                    <i class="fas fa-ticket-alt reward-category-icon"></i>
+                    {% else %}
+                    <i class="fas fa-percent reward-category-icon"></i>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ reward.name }}</h5>
+                    <span class="badge {% if reward.reward_type == 'Product' %}bg-primary{% elif reward.reward_type == 'Coupon' %}bg-info{% else %}bg-warning text-dark{% endif %} mb-2">{{ reward.reward_type }}</span>
+                    <p class="card-text">{{ reward.description }}</p>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <span class="points-badge bg-success text-white">
+                        <i class="fas fa-leaf me-1"></i> {{ reward.points_required }} points
+                    </span>
+                    <form action="{{ url_for('redeem_reward', reward_id=reward.id) }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-primary" {% if session.get('eco_points', 0) < reward.points_required or reward.stock <= 0 %}disabled{% endif %}>
+                            <i class="fas fa-exchange-alt me-1"></i> Redeem
+                        </button>
+                    </form>
+                </div>
+                {% if reward.stock <= 5 and reward.stock > 0 %}
+                <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-warning text-dark">Only {{ reward.stock }} left!</span>
+                </div>
+                {% elif reward.stock <= 0 %}
+                <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-danger">Out of stock</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No rewards available at this time. Keep recycling to earn more eco points!
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Redemption History -->
+    <h2 class="mt-5 mb-4"><i class="fas fa-history me-2"></i>Redemption History</h2>
+    {% if redemptions %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Reward</th>
+                    <th>Points Spent</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for redemption in redemptions %}
+                <tr>
+                    <td>{{ redemption.redeemed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ redemption.reward.name }}</td>
+                    <td>{{ redemption.points_spent }}</td>
+                    <td>
+                        {% if redemption.status == 'Pending' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif redemption.status == 'Processed' %}
+                        <span class="badge bg-info">Processed</span>
+                        {% elif redemption.status == 'Delivered' %}
+                        <span class="badge bg-success">Delivered</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ redemption.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-light">
+        <i class="fas fa-info-circle me-2"></i> You haven't redeemed any rewards yet. Start redeeming to see your history here!
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality for rewards
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const rewardItems = document.querySelectorAll('.reward-item');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const filterValue = this.getAttribute('data-filter');
+            
+            // Show/hide reward items based on filter
+            rewardItems.forEach(item => {
+                if (filterValue === 'all' || item.getAttribute('data-type') === filterValue) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4"><i class="fas fa-history me-2"></i>Pickup History</h2>
+    
+    <!-- Summary Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <h5>Total Pickups</h5>
+                    <h2>{{ pickups|length }}</h2>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5>Eco Points</h5>
+                    <h2>{{ user.eco_points }}</h2>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h5>Carbon Saved</h5>
+                    <h2>{{ user.carbon_saved|default(0)|round(2) }} kg</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pickups Table -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Your Pickups</h4>
+            <a href="{{ url_for('schedule') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-1"></i>New Pickup
+            </a>
+        </div>
+        <div class="card-body">
+            {% if pickups %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date Scheduled</th>
+                                <th>Pickup Date</th>
+                                <th>E-waste Type</th>
+                                <th>Model</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for schedule, ewaste in pickups %}
+                            <tr>
+                                <td>{{ schedule.scheduled_at.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ schedule.pickup_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ ewaste.ewaste_type }}</td>
+                                <td>{{ ewaste.model or 'N/A' }}</td>
+                                <td>${{ ewaste.estimated_price }}</td>
+                                <td>
+                                    <span class="badge {% if schedule.status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                        {{ schedule.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>You don't have any scheduled pickups yet.
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('schedule') }}" class="btn btn-primary">Schedule Your First Pickup</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Eco Points Progress -->
+    <div class="card mt-4">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Eco Points Progress</h4>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <h2 class="text-success">{{ user.eco_points }}</h2>
+                    <p>Current Points</p>
+                </div>
+                <div class="col-md-9">
+                    {% set next_milestone = (user.eco_points // 100 + 1) * 100 %}
+                    {% set progress = (user.eco_points % 100) / 100 * 100 %}
+                    <h5>Next Milestone: {{ next_milestone }} points</h5>
+                    <div class="progress eco-progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" 
+                             aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ progress|int }}%
+                        </div>
+                    </div>
+                    <p class="mt-2">
+                        You need {{ next_milestone - user.eco_points }} more points to reach the next milestone.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

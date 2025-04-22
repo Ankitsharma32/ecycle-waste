@@ -1,0 +1,116 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center text-white">
+    <div class="container">
+        <h1 class="display-4">Recycle Your E-waste Responsibly</h1>
+        <p class="lead mb-4">Turn your old electronics into eco points while saving the planet</p>
+        {% if 'user_id' not in session %}
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Login</a>
+        </div>
+        {% else %}
+        <a href="{{ url_for('schedule') }}" class="btn btn-success btn-lg">Schedule Pickup</a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="container my-5">
+    <h2 class="text-center mb-5">How It Works</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-camera fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Snap & Upload</h3>
+                    <p class="card-text">Take a photo of your e-waste and our AI will classify it automatically</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Schedule Pickup</h3>
+                    <p class="card-text">Choose a convenient time and we'll come to collect your e-waste</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 card-hover">
+                <div class="card-body text-center">
+                    <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                    <h3 class="card-title">Earn Eco Points</h3>
+                    <p class="card-text">Get rewarded with eco points based on the value of your e-waste</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="bg-dark text-white py-5 my-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Environmental Impact</h2>
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <i class="fas fa-trash-alt fa-4x mb-3 text-danger"></i>
+                <h3>Reduce Landfill Waste</h3>
+                <p>E-waste in landfills can leak harmful chemicals into soil and water</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <i class="fas fa-industry fa-4x mb-3 text-warning"></i>
+                <h3>Lower Carbon Footprint</h3>
+                <p>Recycling e-waste significantly reduces greenhouse gas emissions</p>
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <i class="fas fa-recycle fa-4x mb-3 text-success"></i>
+                <h3>Conserve Resources</h3>
+                <p>Recycling recovers valuable materials like gold, silver, and copper</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Latest News Section -->
+<section class="container my-5">
+    <h2 class="mb-4">Latest E-waste News</h2>
+    <div class="row">
+        <div class="col-lg-8">
+            {% if news %}
+                {% for item in news %}
+                <div class="news-item">
+                    <h5>{{ item.title }}</h5>
+                    {% if item.published %}
+                    <small class="text-muted">{{ item.published }}</small>
+                    {% endif %}
+                    <p>
+                        {% if item.summary %}
+                        {{ item.summary|safe|truncate(200) }}
+                        {% endif %}
+                        <a href="{{ item.link }}" target="_blank" class="text-primary">Read more</a>
+                    </p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    No news available at the moment.
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h4 class="card-title">Did You Know?</h4>
+                    <p class="card-text">Only about 20% of e-waste is formally recycled, with 80% often ending up in landfills or being informally processed.</p>
+                    <p class="card-text">Recycling one million laptops saves the energy equivalent to the electricity used by 3,657 homes in a year.</p>
+                    <a href="{{ url_for('register') }}" class="btn btn-light mt-3">Join the Solution</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

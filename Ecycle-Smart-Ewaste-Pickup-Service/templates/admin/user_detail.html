@@ -1,0 +1,303 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user me-2"></i>User Details</h2>
+        <div>
+            <a href="{{ url_for('admin_manage_users') }}" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left me-1"></i>Back to Users
+            </a>
+            <button class="btn btn-primary edit-points-btn" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#editPointsModal"
+                    data-user-id="{{ user.id }}"
+                    data-username="{{ user.username }}"
+                    data-eco-points="{{ user.eco_points }}">
+                <i class="fas fa-edit me-1"></i>Edit Points
+            </button>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- User Profile Card -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">User Profile</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-circle fa-5x text-info"></i>
+                        <h3 class="mt-3">{{ user.username }}</h3>
+                        <p class="text-muted"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+                    </div>
+                    
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-leaf text-success me-2"></i>Eco Points</span>
+                            <span class="badge bg-success rounded-pill">{{ user.eco_points }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-cloud text-info me-2"></i>Carbon Saved</span>
+                            <span class="badge bg-info rounded-pill">{{ user.carbon_saved }} kg</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-recycle text-primary me-2"></i>Total Pickups</span>
+                            <span class="badge bg-primary rounded-pill">{{ pickups|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calendar-alt text-secondary me-2"></i>Joined On</span>
+                            <span>{{ user.created_at.strftime('%Y-%m-%d') }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User's E-waste Pickups -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">E-waste Pickups</h4>
+                </div>
+                <div class="card-body">
+                    {% if pickups %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>E-waste Type</th>
+                                    <th>Condition</th>
+                                    <th>Value</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for schedule, ewaste in pickups %}
+                                <tr>
+                                    <td>{{ schedule.pickup_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ ewaste.ewaste_type }}</td>
+                                    <td>{{ ewaste.condition }}</td>
+                                    <td>${{ ewaste.estimated_price }} / {{ ewaste.eco_points }} pts</td>
+                                    <td class="status-cell">
+                                        <span class="badge {% if schedule.status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ schedule.status }}
+                                        </span>
+                                    </td>
+                                    <td class="action-cell">
+                                        {% if schedule.status == 'Pending' %}
+                                        <button class="btn btn-sm btn-success update-status-btn" 
+                                                data-id="{{ schedule.id }}" 
+                                                data-status="Collected">
+                                            Mark as Collected
+                                        </button>
+                                        {% else %}
+                                        <span class="text-success"><i class="fas fa-check-circle"></i> Completed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">This user has no e-waste pickups yet.</div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('admin_add_ewaste') }}?user_id={{ user.id }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Add E-waste for This User
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Activity Timeline -->
+            {% if pickups %}
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Activity Timeline</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="timeline">
+                        {% for schedule, ewaste in pickups %}
+                        <li class="timeline-item">
+                            <div class="timeline-marker {% if schedule.status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}"></div>
+                            <div class="timeline-content">
+                                <h5 class="timeline-title">{{ ewaste.ewaste_type }} - {{ schedule.status }}</h5>
+                                <p class="timeline-text">
+                                    <strong>Scheduled:</strong> {{ schedule.scheduled_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                                    <strong>Pickup Date:</strong> {{ schedule.pickup_date.strftime('%Y-%m-%d %H:%M') }}<br>
+                                    <strong>Address:</strong> {{ schedule.pickup_address }}<br>
+                                    <strong>Earned:</strong> {{ ewaste.eco_points }} eco points
+                                </p>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Points Modal -->
+<div class="modal fade" id="editPointsModal" tabindex="-1" aria-labelledby="editPointsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editPointsModalLabel">Edit User Eco Points</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editPointsForm">
+                    <input type="hidden" id="editUserId" name="user_id">
+                    <div class="mb-3">
+                        <label for="editUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="editUsername" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="currentPoints" class="form-label">Current Eco Points</label>
+                        <input type="number" class="form-control" id="currentPoints" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPoints" class="form-label">New Eco Points</label>
+                        <input type="number" class="form-control" id="newPoints" name="eco_points" required min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="adjustmentReason" class="form-label">Reason for Adjustment</label>
+                        <textarea class="form-control" id="adjustmentReason" name="reason" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="savePointsBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<style>
+    /* Timeline Styles */
+    .timeline {
+        list-style: none;
+        padding: 20px 0 20px;
+        position: relative;
+    }
+    
+    .timeline:before {
+        content: " ";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        width: 3px;
+        background-color: #eee;
+        z-index: 0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 25px;
+        margin-left: 40px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        top: 0;
+        left: -40px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        z-index: 1;
+    }
+    
+    .timeline-content {
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .timeline-title {
+        margin-top: 0;
+        font-size: 18px;
+    }
+    
+    .timeline-text {
+        margin-bottom: 0;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Edit points modal setup
+        const editPointsBtns = document.querySelectorAll('.edit-points-btn');
+        editPointsBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');
+                const username = this.getAttribute('data-username');
+                const ecoPoints = this.getAttribute('data-eco-points');
+                
+                document.getElementById('editUserId').value = userId;
+                document.getElementById('editUsername').value = username;
+                document.getElementById('currentPoints').value = ecoPoints;
+                document.getElementById('newPoints').value = ecoPoints;
+            });
+        });
+        
+        // Save points changes
+        const savePointsBtn = document.getElementById('savePointsBtn');
+        if (savePointsBtn) {
+            savePointsBtn.addEventListener('click', function() {
+                const form = document.getElementById('editPointsForm');
+                const userId = document.getElementById('editUserId').value;
+                const newPoints = document.getElementById('newPoints').value;
+                const reason = document.getElementById('adjustmentReason').value;
+                
+                if (!newPoints || !reason) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('eco_points', newPoints);
+                formData.append('reason', reason);
+                
+                // Show loading state
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                this.disabled = true;
+                
+                fetch('/admin/update_eco_points', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(`Error: ${data.error}`);
+                        this.disabled = false;
+                        this.textContent = 'Save Changes';
+                        return;
+                    }
+                    
+                    // Reload page to show updated eco points
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the eco points.');
+                    this.disabled = false;
+                    this.textContent = 'Save Changes';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

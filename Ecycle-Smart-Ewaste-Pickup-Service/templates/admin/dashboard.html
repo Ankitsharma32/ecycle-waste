@@ -1,0 +1,174 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
+        <div>
+            <a href="{{ url_for('admin_view_pickups') }}" class="btn btn-primary me-2">
+                <i class="fas fa-list me-1"></i>Manage Pickups
+            </a>
+            <a href="{{ url_for('admin_manage_users') }}" class="btn btn-info me-2">
+                <i class="fas fa-users me-1"></i>Manage Users
+            </a>
+            <a href="{{ url_for('admin_add_ewaste') }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>Add E-waste
+            </a>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card bg-warning text-dark h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h4>Pending Pickups</h4>
+                    <div class="stat-value">{{ pending_count }}</div>
+                    <a href="{{ url_for('admin_view_pickups', status='Pending') }}" class="btn btn-dark mt-3">View Pending</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h4>Collected Pickups</h4>
+                    <div class="stat-value">{{ collected_count }}</div>
+                    <a href="{{ url_for('admin_view_pickups', status='Collected') }}" class="btn btn-light mt-3">View Collected</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h4>Registered Users</h4>
+                    <div class="stat-value">{{ user_count }}</div>
+                    <a href="{{ url_for('admin_manage_users') }}" class="btn btn-light mt-3">Manage Users</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Pickups -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Recent Pickups</h4>
+        </div>
+        <div class="card-body">
+            {% if recent_pickups %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>User</th>
+                            <th>E-waste Type</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule, user, ewaste in recent_pickups %}
+                        <tr>
+                            <td>{{ schedule.pickup_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ ewaste.ewaste_type }}</td>
+                            <td class="status-cell">
+                                <span class="badge {% if schedule.status == 'Pending' %}bg-warning{% else %}bg-success{% endif %}">
+                                    {{ schedule.status }}
+                                </span>
+                            </td>
+                            <td class="action-cell">
+                                {% if schedule.status == 'Pending' %}
+                                <button class="btn btn-sm btn-success update-status-btn" 
+                                        data-id="{{ schedule.id }}" 
+                                        data-status="Collected">
+                                    Mark as Collected
+                                </button>
+                                {% else %}
+                                <span class="text-success"><i class="fas fa-check-circle"></i> Completed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No recent pickups available.</div>
+            {% endif %}
+            <div class="text-center mt-3">
+                <a href="{{ url_for('admin_view_pickups') }}" class="btn btn-primary">View All Pickups</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">E-waste Statistics</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>E-waste Type</th>
+                                    <th>Total Count</th>
+                                    <th>Total Eco Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for type, stats in ewaste_stats.items() %}
+                                <tr>
+                                    <td>{{ type }}</td>
+                                    <td>{{ stats.count }}</td>
+                                    <td>{{ stats.eco_points }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">Top Users</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Eco Points</th>
+                                    <th>Pickups</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in top_users %}
+                                <tr>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.eco_points }}</td>
+                                    <td>{{ user.pickup_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

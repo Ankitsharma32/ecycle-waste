@@ -1,0 +1,150 @@
+/* Additional custom styles beyond Bootstrap */
+
+/* Login & Registration forms */
+.auth-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Cards with hover effect */
+.card-hover:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom progress bar for eco points */
+.eco-progress {
+    height: 20px;
+    background-color: var(--bs-dark);
+    border-radius: 10px;
+}
+
+.eco-progress .progress-bar {
+    background-color: var(--bs-success);
+}
+
+/* News items styling */
+.news-item {
+    border-left: 3px solid var(--bs-info);
+    padding-left: 15px;
+    margin-bottom: 15px;
+}
+
+.news-item h5 {
+    margin-bottom: 5px;
+}
+
+/* Image upload preview */
+#imagePreview {
+    max-width: 100%;
+    border-radius: 8px;
+    display: none;
+    margin-top: 10px;
+}
+
+/* Admin dashboard statistics */
+.stat-card {
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-card i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-pending {
+    background-color: var(--bs-warning);
+    color: var(--bs-dark);
+}
+
+.status-collected {
+    background-color: var(--bs-success);
+    color: var(--bs-white);
+}
+
+/* Dashboard welcome section */
+.welcome-banner {
+    background-color: var(--bs-primary);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+/* Carbon footprint display */
+.carbon-saved {
+    color: var(--bs-success);
+    font-weight: bold;
+}
+
+/* Hero section */
+.hero-section {
+    padding: 80px 0;
+    background-color: var(--bs-dark);
+    margin-bottom: 40px;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+}
+
+/* Footer */
+footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+}
+
+/* Rewards page styles */
+.reward-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.reward-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reward-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.points-badge {
+    font-size: 1.1rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.rewards-banner {
+    background-color: var(--bs-success);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.reward-category-icon {
+    font-size: 2.5rem;
+    color: var(--bs-info);
+    margin-bottom: 15px;
+}

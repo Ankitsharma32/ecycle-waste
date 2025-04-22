@@ -1,0 +1,186 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 mb-0">
+            <i class="fas fa-plus-circle text-success me-2"></i> Add New Reward
+        </h1>
+        <a href="{{ url_for('admin_manage_rewards') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Rewards
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Reward Details</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('admin_add_reward') }}" method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Reward Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="form-text">Give your reward a descriptive name that users will understand.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            <div class="form-text">Provide detailed information about what the user will receive.</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="points_required" class="form-label">Points Required</label>
+                                <input type="number" class="form-control" id="points_required" name="points_required" min="1" required>
+                                <div class="form-text">How many eco points are needed to redeem this reward?</div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="stock" class="form-label">Available Stock</label>
+                                <input type="number" class="form-control" id="stock" name="stock" min="0" value="10" required>
+                                <div class="form-text">How many of these rewards are available?</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reward_type" class="form-label">Reward Type</label>
+                            <select class="form-select" id="reward_type" name="reward_type" required>
+                                <option value="" disabled selected>Select a reward type</option>
+                                <option value="Product">Product</option>
+                                <option value="Coupon">Coupon</option>
+                                <option value="Discount">Discount</option>
+                            </select>
+                            <div class="form-text">
+                                <strong>Product:</strong> Physical items like refurbished electronics<br>
+                                <strong>Coupon:</strong> Gift cards or vouchers for partner stores<br>
+                                <strong>Discount:</strong> Special discounts for services
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="image_path" class="form-label">Image URL (optional)</label>
+                            <input type="text" class="form-control" id="image_path" name="image_path" placeholder="https://example.com/image.jpg">
+                            <div class="form-text">Provide a URL to an image representing this reward. If left blank, a default icon will be used.</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="active" name="active" checked>
+                            <label class="form-check-label" for="active">Active</label>
+                            <div class="form-text ms-4">Uncheck to hide this reward from users without deleting it.</div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="reset" class="btn btn-outline-secondary me-md-2">Reset Form</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus-circle me-2"></i>Add Reward
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preview Card -->
+    <div class="row mt-4">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 offset-md-3">
+                            <div class="card h-100 reward-card preview-card">
+                                <div class="card-img-top reward-img d-flex align-items-center justify-content-center bg-dark preview-img">
+                                    <i class="fas fa-box-open reward-category-icon preview-icon"></i>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title preview-name">Reward Name</h5>
+                                    <span class="badge bg-primary mb-2 preview-type">Product</span>
+                                    <p class="card-text preview-description">Reward description will appear here.</p>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between align-items-center">
+                                    <span class="points-badge bg-success text-white">
+                                        <i class="fas fa-leaf me-1"></i> <span class="preview-points">100</span> points
+                                    </span>
+                                    <button type="button" class="btn btn-primary" disabled>
+                                        <i class="fas fa-exchange-alt me-1"></i> Redeem
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Live preview functionality
+        const nameInput = document.getElementById('name');
+        const descriptionInput = document.getElementById('description');
+        const pointsInput = document.getElementById('points_required');
+        const typeSelect = document.getElementById('reward_type');
+        const imageInput = document.getElementById('image_path');
+        
+        const previewName = document.querySelector('.preview-name');
+        const previewDescription = document.querySelector('.preview-description');
+        const previewPoints = document.querySelector('.preview-points');
+        const previewType = document.querySelector('.preview-type');
+        const previewImg = document.querySelector('.preview-img');
+        const previewIcon = document.querySelector('.preview-icon');
+        
+        // Update preview on input changes
+        nameInput.addEventListener('input', function() {
+            previewName.textContent = this.value || 'Reward Name';
+        });
+        
+        descriptionInput.addEventListener('input', function() {
+            previewDescription.textContent = this.value || 'Reward description will appear here.';
+        });
+        
+        pointsInput.addEventListener('input', function() {
+            previewPoints.textContent = this.value || '100';
+        });
+        
+        typeSelect.addEventListener('change', function() {
+            const type = this.value;
+            previewType.textContent = type || 'Product';
+            
+            // Update badge color based on type
+            previewType.className = 'badge mb-2';
+            if (type === 'Product') {
+                previewType.classList.add('bg-primary');
+                previewIcon.className = 'fas fa-box-open reward-category-icon';
+            } else if (type === 'Coupon') {
+                previewType.classList.add('bg-info');
+                previewIcon.className = 'fas fa-ticket-alt reward-category-icon';
+            } else if (type === 'Discount') {
+                previewType.classList.add('bg-warning', 'text-dark');
+                previewIcon.className = 'fas fa-percent reward-category-icon';
+            }
+        });
+        
+        imageInput.addEventListener('input', function() {
+            if (this.value) {
+                // Replace the icon div with an image
+                previewImg.innerHTML = `<img src="${this.value}" class="card-img-top reward-img" alt="Preview">`;
+            } else {
+                // Restore the icon
+                previewImg.innerHTML = '';
+                previewImg.appendChild(previewIcon);
+            }
+        });
+    });
+</script>
+{% endblock %}
